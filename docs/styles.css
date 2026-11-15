@@ -203,6 +203,18 @@ td.num {
   line-height: 1.5;
 }
 
+.bucket {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.bucket.human { color: var(--human); }
+.bucket.agent { color: var(--agent); }
+.bucket.unknown,
+.bucket.other { color: var(--other); }
+
 .error {
   border: 1px solid #8a3b3b;
   background: #2a1515;

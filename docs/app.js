@@ -14,6 +14,7 @@ async function main() {
     renderStats(data);
     renderLegend(data);
     renderCharts(data);
+    renderContributorTable(data);
     renderRepoTable(data);
   } catch (err) {
     errorEl.hidden = false;
@@ -149,6 +150,37 @@ function renderCharts(data) {
       },
     },
   });
+}
+
+function renderContributorTable(data) {
+  const rows = data.summary?.contributors || [];
+  const body = document.getElementById("contributorRows");
+  if (!rows.length) {
+    body.innerHTML =
+      '<tr><td colspan="6">No contributors yet — run Collect LOC.</td></tr>';
+    return;
+  }
+
+  body.innerHTML = rows
+    .map((row) => {
+      const identity = [row.email, row.login].filter(Boolean).join(" · ") || "—";
+      const bucketClass =
+        row.bucket === "human" || row.bucket === "agent" || row.bucket === "unknown"
+          ? row.bucket
+          : "other";
+      const repoCount = Array.isArray(row.repos) ? row.repos.length : 0;
+      const repoTitle = Array.isArray(row.repos) ? row.repos.join(", ") : "";
+      return `
+      <tr>
+        <td>${escapeHtml(row.displayName || row.name || row.login || "unknown")}</td>
+        <td><span class="bucket ${bucketClass}">${escapeHtml(row.label || row.bucket || "Other")}</span></td>
+        <td>${escapeHtml(identity)}</td>
+        <td class="num">${fmt(row.additions)}</td>
+        <td class="num">${fmt(row.commits)}</td>
+        <td class="num" title="${escapeHtml(repoTitle)}">${fmt(repoCount)}</td>
+      </tr>`;
+    })
+    .join("");
 }
 
 function renderRepoTable(data) {

@@ -52,9 +52,11 @@ The workflow:
 
 | File | Purpose |
 | --- | --- |
-| `config.json` | Owner, fork/archive filters, allow/block lists, `extraRepos`, `maxFileAdditions` |
+| `config.json` | Owner, fork/archive filters, `repoBlocklist`, `authorBlocklist`, `extraRepos`, `maxFileAdditions` |
 | `committers.json` | Rules mapping author email/login/Co-authored-by → `human` / `agent` / … |
 | `ignore-patterns.txt` | Single blacklist of paths excluded from LOC |
+
+Northcoders course repos (`nc-news*`, `30veg*`) are in `repoBlocklist` so inherited starter history does not inflate totals. If a stray author still appears in the dashboard **Contributors** table, add their email/name/login to `authorBlocklist`.
 
 ### Ignore philosophy
 

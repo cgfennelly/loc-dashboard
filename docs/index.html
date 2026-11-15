@@ -50,6 +50,32 @@
 
       <section class="panel">
         <div class="panel-head">
+          <h2>Contributors</h2>
+        </div>
+        <p class="note" style="margin: 0 0.35rem 0.75rem">
+          Raw git identities that landed lines on trunk. Unexpected names usually
+          mean inherited clone history — add them to
+          <code>config.json</code> → <code>authorBlocklist</code>.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Contributor</th>
+                <th>Bucket</th>
+                <th>Email / login</th>
+                <th>Additions</th>
+                <th>Commits</th>
+                <th>Repos</th>
+              </tr>
+            </thead>
+            <tbody id="contributorRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
           <h2>By repository</h2>
         </div>
         <div class="table-wrap">

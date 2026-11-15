@@ -3,8 +3,15 @@
   "includeForks": false,
   "includeArchived": false,
   "repoAllowlist": [],
-  "repoBlocklist": [],
+  "repoBlocklist": [
+    "cgfennelly/nc-news",
+    "cgfennelly/nc-news-backend",
+    "cgfennelly/30veg-front-end",
+    "cgfennelly/30veg-frontend",
+    "cgfennelly/30veg-backend"
+  ],
   "extraRepos": [],
+  "authorBlocklist": [],
   "maxFileAdditions": 2000,
   "skipMergeCommits": true,
   "historySince": null,

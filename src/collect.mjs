@@ -29,8 +29,12 @@ async function main() {
   const dayMap = new Map();
   const repoTotals = {};
   const committerTotals = {};
+  /** @type {Map<string, any>} */
+  const contributorMap = new Map();
+  const authorBlock = normalisedAuthorBlocklist(config.authorBlocklist || []);
   let commitsSeen = 0;
   let commitsCounted = 0;
+  let commitsAuthorBlocked = 0;
   let filesIgnored = 0;
   let filesOversized = 0;
 
@@ -46,6 +50,11 @@ async function main() {
       commitsSeen += 1;
 
       if (config.skipMergeCommits !== false && commit.parentCount > 1) {
+        continue;
+      }
+
+      if (isAuthorBlocked(commit, authorBlock)) {
+        commitsAuthorBlocked += 1;
         continue;
       }
 
@@ -89,6 +98,7 @@ async function main() {
       bump(dayMap, day, who.id, repo.fullName, additions, deletions);
       bumpNested(repoTotals, repo.fullName, who.id, additions, deletions);
       bumpNested(committerTotals, who.id, "_", additions, deletions);
+      bumpContributor(contributorMap, commit, who, repo.fullName, additions, deletions);
     }
   }
 
@@ -125,16 +135,28 @@ async function main() {
     });
   }
 
+  const contributors = [...contributorMap.values()]
+    .map((row) => ({
+      ...row,
+      repos: [...row.repos].sort(),
+    }))
+    .sort(
+      (a, b) =>
+        b.additions - a.additions ||
+        (a.displayName || "").localeCompare(b.displayName || ""),
+    );
+
   const output = {
     generatedAt: new Date().toISOString(),
     metric: "additions",
     metricNote:
-      "Cumulative chart sums filtered additions on the default branch (trunk). Merge commits skipped. Ignored paths and oversized single-file adds excluded.",
+      "Cumulative chart sums filtered additions on the default branch (trunk). Merge commits skipped. Ignored paths, blocklisted repos/authors, and oversized single-file adds excluded.",
     committers: legend,
     summary: {
       reposScanned: repos.length,
       commitsSeen,
       commitsCounted,
+      commitsAuthorBlocked,
       filesIgnored,
       filesOversized,
       totalAdditions: runningTotal,
@@ -151,6 +173,7 @@ async function main() {
         ]),
       ),
       byRepo: repoTotals,
+      contributors,
     },
     daily,
     cumulative,
@@ -246,6 +269,70 @@ function bumpNested(map, outerKey, innerKey, additions, deletions) {
   bucket.deletions += deletions;
   bucket.net += additions - deletions;
   bucket.commits += 1;
+}
+
+function bumpContributor(map, commit, who, repoFullName, additions, deletions) {
+  const login = (commit.author?.login || "").trim();
+  const email = (commit.author?.email || commit.committer?.email || "").trim();
+  const name = (commit.author?.name || commit.committer?.name || "").trim();
+  const key = (login || email || name || "unknown").toLowerCase();
+
+  if (!map.has(key)) {
+    map.set(key, {
+      key,
+      login: login || null,
+      email: email || null,
+      name: name || null,
+      displayName: name || login || email || "unknown",
+      bucket: who.id,
+      label: who.label,
+      additions: 0,
+      deletions: 0,
+      net: 0,
+      commits: 0,
+      repos: new Set(),
+    });
+  }
+
+  const row = map.get(key);
+  // Prefer richer identity fields as we see them
+  if (login && !row.login) row.login = login;
+  if (email && !row.email) row.email = email;
+  if (name && !row.name) {
+    row.name = name;
+    row.displayName = name;
+  }
+  row.bucket = who.id;
+  row.label = who.label;
+  row.additions += additions;
+  row.deletions += deletions;
+  row.net += additions - deletions;
+  row.commits += 1;
+  row.repos.add(repoFullName);
+}
+
+function normalisedAuthorBlocklist(entries) {
+  return entries
+    .map((entry) => String(entry || "").trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function isAuthorBlocked(commit, blocklist) {
+  if (!blocklist.length) return false;
+  const haystacks = [
+    commit.author?.login,
+    commit.author?.email,
+    commit.author?.name,
+    commit.committer?.login,
+    commit.committer?.email,
+    commit.committer?.name,
+  ]
+    .map((v) => String(v || "").trim().toLowerCase())
+    .filter(Boolean);
+
+  return haystacks.some((value) =>
+    blocklist.some((blocked) => value === blocked || value.includes(blocked)),
+  );
 }
 
 function sumField(byCommitter, field) {
