@@ -34,10 +34,11 @@ python3 -m http.server 8080 --directory _site
 
 ## GitHub Actions setup
 
-1. Create this repository on GitHub (private is fine).
-2. Add a secret **`LOC_GITHUB_TOKEN`**: a classic PAT with `repo` scope, or a fine-grained token that can read every private repo you want included. The default `GITHUB_TOKEN` can only see *this* repository.
-3. Enable **Settings → Pages → Source: GitHub Actions**.
-4. Run **Actions → Collect LOC → Run workflow**.
+1. Create an empty private repository named `loc-dashboard` under your account (no README/license).
+2. Push this project to it (`git remote add origin … && git push -u origin main`).
+3. Add a secret **`LOC_GITHUB_TOKEN`**: a classic PAT with `repo` scope, or a fine-grained token that can read every private repo you want included. The default `GITHUB_TOKEN` can only see *this* repository, which is not enough for a multi-repo tally.
+4. Enable **Settings → Pages → Source: GitHub Actions**.
+5. Run **Actions → Collect LOC → Run workflow**.
 
 The workflow:
 
