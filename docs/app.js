@@ -85,7 +85,7 @@ function renderStats(data) {
 }
 
 function renderLegend(data) {
-  const ids = seriesIds(data);
+  const ids = seriesIds(data).filter((id) => seriesHasData(data, id));
   document.getElementById("legend").innerHTML = ids
     .map((id) => {
       const label = data.committers?.[id] || id;
@@ -96,19 +96,21 @@ function renderLegend(data) {
 }
 
 function renderCharts(data) {
-  const ids = seriesIds(data);
+  // Human at bottom of the stack, then agent, then any others.
+  const ids = seriesIds(data).filter((id) => seriesHasData(data, id));
   const cumulative = data.cumulative || [];
   const daily = data.daily || [];
 
-  const cumDatasets = ids.map((id) => ({
+  const cumDatasets = ids.map((id, index) => ({
     label: data.committers?.[id] || id,
     data: cumulative.map((row) => row.byCommitter?.[id] || 0),
     borderColor: colorFor(id),
-    backgroundColor: hexAlpha(colorFor(id), 0.18),
+    backgroundColor: hexAlpha(colorFor(id), index === 0 ? 0.45 : 0.55),
     fill: true,
-    tension: 0.25,
+    tension: 0.2,
     pointRadius: 0,
-    borderWidth: 2,
+    borderWidth: 1.5,
+    stack: "cum",
   }));
 
   new Chart(document.getElementById("cumulativeChart"), {
@@ -117,7 +119,32 @@ function renderCharts(data) {
       labels: cumulative.map((row) => row.date),
       datasets: cumDatasets,
     },
-    options: chartOptions("Cumulative filtered additions"),
+    options: {
+      ...chartOptions("Cumulative filtered additions"),
+      plugins: {
+        ...chartOptions("Cumulative filtered additions").plugins,
+        tooltip: {
+          callbacks: {
+            label: (ctx) => `${ctx.dataset.label}: ${fmt(ctx.parsed.y)}`,
+            footer: (items) => {
+              const total = items.reduce((sum, item) => sum + (item.parsed.y || 0), 0);
+              return `Total: ${fmt(total)}`;
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          ticks: { color: "#93a0b0", maxTicksLimit: 10 },
+          grid: { color: "rgba(42,52,65,0.5)" },
+        },
+        y: {
+          stacked: true,
+          ticks: { color: "#93a0b0" },
+          grid: { color: "rgba(42,52,65,0.5)" },
+        },
+      },
+    },
   });
 
   const dailyDatasets = ids.map((id) => ({
@@ -150,6 +177,12 @@ function renderCharts(data) {
       },
     },
   });
+}
+
+function seriesHasData(data, id) {
+  const summary = data.summary?.byCommitter?.[id]?.additions || 0;
+  if (summary > 0) return true;
+  return (data.cumulative || []).some((row) => (row.byCommitter?.[id] || 0) > 0);
 }
 
 function renderContributorTable(data) {
