@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-15T21:46:33.475Z",
+  "generatedAt": "2026-11-15T21:53:25.992Z",
   "metric": "additions",
   "metricNote": "Cumulative chart sums filtered additions on the default branch (trunk). Merge commits skipped. Ignored paths, blocklisted repos/authors, and oversized single-file adds excluded.",
   "committers": {
@@ -9,19 +9,19 @@
   },
   "summary": {
     "reposScanned": 51,
-    "commitsSeen": 404,
-    "commitsCounted": 361,
+    "commitsSeen": 406,
+    "commitsCounted": 362,
     "commitsAuthorBlocked": 0,
-    "filesIgnored": 1590,
+    "filesIgnored": 1592,
     "filesOversized": 5,
-    "totalAdditions": 38504,
+    "totalAdditions": 38545,
     "byCommitter": {
       "human": {
         "label": "Chris",
-        "additions": 24398,
-        "deletions": 2667,
-        "net": 21731,
-        "commits": 325
+        "additions": 24439,
+        "deletions": 2675,
+        "net": 21764,
+        "commits": 326
       },
       "agent": {
         "label": "Cursor Agent",
@@ -263,10 +263,10 @@
       },
       "cgfennelly/loc-dashboard": {
         "human": {
-          "additions": 1883,
-          "deletions": 8,
-          "net": 1875,
-          "commits": 3
+          "additions": 1924,
+          "deletions": 16,
+          "net": 1908,
+          "commits": 4
         }
       },
       "cgfennelly/note-take-webapp": {
@@ -421,10 +421,10 @@
         "displayName": "cgfennelly",
         "bucket": "human",
         "label": "Chris",
-        "additions": 29762,
-        "deletions": 3203,
-        "net": 26559,
-        "commits": 332,
+        "additions": 29803,
+        "deletions": 3211,
+        "net": 26592,
+        "commits": 333,
         "repos": [
           "cgfennelly/AC-tech-test-draft",
           "cgfennelly/Githubactions",
@@ -4128,26 +4128,26 @@
       "date": "2026-11-15",
       "byCommitter": {
         "human": {
-          "additions": 1883,
-          "deletions": 8,
-          "net": 1875,
-          "commits": 3
+          "additions": 1924,
+          "deletions": 16,
+          "net": 1908,
+          "commits": 4
         }
       },
       "byRepo": {
         "cgfennelly/loc-dashboard": {
           "human": {
-            "additions": 1883,
-            "deletions": 8,
-            "net": 1875,
-            "commits": 3
+            "additions": 1924,
+            "deletions": 16,
+            "net": 1908,
+            "commits": 4
           }
         }
       },
-      "additions": 1883,
-      "deletions": 8,
-      "net": 1875,
-      "commits": 3
+      "additions": 1924,
+      "deletions": 16,
+      "net": 1908,
+      "commits": 4
     }
   ],
   "cumulative": [
@@ -5359,9 +5359,9 @@
     },
     {
       "date": "2026-11-15",
-      "total": 38504,
+      "total": 38545,
       "byCommitter": {
-        "human": 24398,
+        "human": 24439,
         "agent": 14106,
         "unknown": 0
       }
