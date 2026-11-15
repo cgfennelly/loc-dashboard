@@ -1,0 +1,83 @@
+name: Collect LOC
+
+on:
+  schedule:
+    # Daily ~06:00 UTC
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "config.json"
+      - "committers.json"
+      - "ignore-patterns.txt"
+      - "docs/**"
+      - ".github/workflows/collect.yml"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: collect-loc
+  cancel-in-progress: false
+
+jobs:
+  collect-and-publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Need a token that can push; default GITHUB_TOKEN works for this repo.
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Collect trunk LOC stats
+        env:
+          # Create a classic PAT (repo scope) or fine-grained token with
+          # read access to all private repos you want counted, then add it
+          # as repository secret LOC_GITHUB_TOKEN. Without it, only this
+          # repository is visible to the default GITHUB_TOKEN.
+          LOC_GITHUB_TOKEN: ${{ secrets.LOC_GITHUB_TOKEN }}
+        run: npm run collect
+
+      - name: Commit updated data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/timeseries.json data/timeseries.min.json
+          if git diff --staged --quiet; then
+            echo "No data changes"
+          else
+            git commit -m "chore: refresh LOC timeseries"
+            git push
+          fi
+
+      - name: Prepare Pages bundle
+        run: |
+          mkdir -p _site/data
+          cp docs/index.html docs/styles.css docs/app.js _site/
+          cp data/timeseries.min.json data/timeseries.json _site/data/
+          # Dashboard fetches ./data/timeseries.min.json
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

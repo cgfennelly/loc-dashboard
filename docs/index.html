@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LOC Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js" defer></script>
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <div class="shell">
+      <header>
+        <div class="brand">
+          <h1>Lines of code</h1>
+          <p>
+            Cumulative filtered additions merged to each repo’s default branch
+            (trunk), split by human vs agent authorship.
+          </p>
+        </div>
+        <div class="meta" id="meta">Loading…</div>
+      </header>
+
+      <section class="stats" id="stats"></section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Cumulative additions</h2>
+          <div class="legend" id="legend"></div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="cumulativeChart" aria-label="Cumulative lines of code chart"></canvas>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Daily additions</h2>
+        </div>
+        <div class="chart-wrap" style="height: min(280px, 40vh)">
+          <canvas id="dailyChart" aria-label="Daily lines of code chart"></canvas>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>By repository</h2>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Repository</th>
+                <th>Human</th>
+                <th>Agent</th>
+                <th>Other</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody id="repoRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <p class="note">
+        Counts exclude merge commits, paths in <code>ignore-patterns.txt</code>,
+        and single-file additions over the configured size cap. Data refreshes
+        daily via GitHub Actions.
+      </p>
+      <div id="error" hidden class="error"></div>
+    </div>
+  </body>
+</html>

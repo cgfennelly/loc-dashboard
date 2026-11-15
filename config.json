@@ -1,0 +1,13 @@
+{
+  "$schema": "./config.schema.json",
+  "owner": "cgfennelly",
+  "includeForks": false,
+  "includeArchived": false,
+  "repoAllowlist": [],
+  "repoBlocklist": [],
+  "extraRepos": [],
+  "maxFileAdditions": 2000,
+  "skipMergeCommits": true,
+  "historySince": null,
+  "outputPath": "data/timeseries.json"
+}

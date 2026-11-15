@@ -1,0 +1,30 @@
+{
+  "defaultId": "unknown",
+  "defaultLabel": "Other",
+  "rules": [
+    {
+      "id": "agent",
+      "label": "Cursor Agent",
+      "any": [
+        { "email": "cursoragent@cursor.com" },
+        { "emailEndsWith": "@cursor.com" },
+        { "nameEquals": "Cursor Agent" },
+        { "coAuthoredByContains": "cursoragent@cursor.com" },
+        { "coAuthoredByContains": "Co-authored-by: Cursor" }
+      ]
+    },
+    {
+      "id": "human",
+      "label": "Chris",
+      "any": [
+        { "login": "cgfennelly" },
+        { "email": "c.g.fennelly@gmail.com" },
+        { "emailContains": "+cgfennelly@users.noreply.github.com" },
+        { "email": "cgfennelly@users.noreply.github.com" },
+        { "emailContains": "chrisfennelly@" },
+        { "nameEquals": "Chris Fennelly" },
+        { "nameEquals": "cgfennelly" }
+      ]
+    }
+  ]
+}
