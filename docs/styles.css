@@ -215,6 +215,37 @@ td.num {
 .bucket.unknown,
 .bucket.other { color: var(--other); }
 
+.split-lists {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  padding: 0 0.15rem 0.85rem;
+}
+
+.recent-card h3 {
+  margin: 0 0 0.65rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.repo-name {
+  font-weight: 500;
+}
+
+.repo-total {
+  margin-top: 0.15rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-family: var(--mono);
+}
+
+.total-cell {
+  font-weight: 600;
+}
+
 .error {
   border: 1px solid #8a3b3b;
   background: #2a1515;

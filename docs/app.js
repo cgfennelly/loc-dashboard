@@ -14,6 +14,7 @@ async function main() {
     renderStats(data);
     renderLegend(data);
     renderCharts(data);
+    renderRecentLists(data);
     renderContributorTable(data);
     renderRepoTable(data);
   } catch (err) {
@@ -103,11 +104,14 @@ function renderCharts(data) {
 
   const cumDatasets = ids.map((id, index) => ({
     label: data.committers?.[id] || id,
-    data: cumulative.map((row) => row.byCommitter?.[id] || 0),
+    data: cumulative.map((row) => ({
+      x: row.date,
+      y: row.byCommitter?.[id] || 0,
+    })),
     borderColor: colorFor(id),
     backgroundColor: hexAlpha(colorFor(id), index === 0 ? 0.45 : 0.55),
     fill: true,
-    tension: 0.2,
+    tension: 0,
     pointRadius: 0,
     borderWidth: 1.5,
     stack: "cum",
@@ -115,16 +119,19 @@ function renderCharts(data) {
 
   new Chart(document.getElementById("cumulativeChart"), {
     type: "line",
-    data: {
-      labels: cumulative.map((row) => row.date),
-      datasets: cumDatasets,
-    },
+    data: { datasets: cumDatasets },
     options: {
-      ...chartOptions("Cumulative filtered additions"),
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
       plugins: {
-        ...chartOptions("Cumulative filtered additions").plugins,
+        legend: { display: false },
         tooltip: {
           callbacks: {
+            title: (items) => {
+              const raw = items[0]?.parsed?.x;
+              return raw ? formatDate(raw) : "";
+            },
             label: (ctx) => `${ctx.dataset.label}: ${fmt(ctx.parsed.y)}`,
             footer: (items) => {
               const total = items.reduce((sum, item) => sum + (item.parsed.y || 0), 0);
@@ -134,10 +141,7 @@ function renderCharts(data) {
         },
       },
       scales: {
-        x: {
-          ticks: { color: "#93a0b0", maxTicksLimit: 10 },
-          grid: { color: "rgba(42,52,65,0.5)" },
-        },
+        x: timeScaleOptions(),
         y: {
           stacked: true,
           ticks: { color: "#93a0b0" },
@@ -149,25 +153,40 @@ function renderCharts(data) {
 
   const dailyDatasets = ids.map((id) => ({
     label: data.committers?.[id] || id,
-    data: daily.map((row) => row.byCommitter?.[id]?.additions || 0),
+    data: daily.map((row) => ({
+      x: row.date,
+      y: row.byCommitter?.[id]?.additions || 0,
+    })),
     backgroundColor: hexAlpha(colorFor(id), 0.85),
     borderWidth: 0,
     stack: "day",
+    barThickness: 6,
   }));
 
   new Chart(document.getElementById("dailyChart"), {
     type: "bar",
-    data: {
-      labels: daily.map((row) => row.date),
-      datasets: dailyDatasets,
-    },
+    data: { datasets: dailyDatasets },
     options: {
-      ...chartOptions("Daily filtered additions"),
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "index", intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: (items) => {
+              const raw = items[0]?.parsed?.x;
+              return raw ? formatDate(raw) : "";
+            },
+            label: (ctx) => `${ctx.dataset.label}: ${fmt(ctx.parsed.y)}`,
+          },
+        },
+      },
       scales: {
         x: {
+          ...timeScaleOptions(),
           stacked: true,
-          ticks: { color: "#93a0b0", maxTicksLimit: 10 },
-          grid: { color: "rgba(42,52,65,0.5)" },
+          offset: true,
         },
         y: {
           stacked: true,
@@ -179,10 +198,94 @@ function renderCharts(data) {
   });
 }
 
+function timeScaleOptions() {
+  return {
+    type: "time",
+    time: {
+      unit: "month",
+      tooltipFormat: "yyyy-MM-dd",
+      displayFormats: {
+        day: "yyyy-MM-dd",
+        month: "MMM yyyy",
+        year: "yyyy",
+      },
+    },
+    ticks: {
+      color: "#93a0b0",
+      maxTicksLimit: 10,
+      autoSkip: true,
+    },
+    grid: { color: "rgba(42,52,65,0.5)" },
+  };
+}
+
 function seriesHasData(data, id) {
   const summary = data.summary?.byCommitter?.[id]?.additions || 0;
   if (summary > 0) return true;
   return (data.cumulative || []).some((row) => (row.byCommitter?.[id] || 0) > 0);
+}
+
+function renderRecentLists(data) {
+  const humanLabel = data.committers?.human || "Chris";
+  const agentLabel = data.committers?.agent || "Cursor Agent";
+  const humanItems = recentDayRepoItems(data, "human", 10);
+  const agentItems = recentDayRepoItems(data, "agent", 10);
+
+  document.getElementById("recentLists").innerHTML = `
+    ${recentListCard(humanLabel, "human", humanItems)}
+    ${recentListCard(agentLabel, "agent", agentItems)}
+  `;
+}
+
+function recentListCard(title, cls, items) {
+  const rows = items.length
+    ? items
+        .map(
+          (item) => `
+        <tr>
+          <td>${escapeHtml(item.date)}</td>
+          <td>${escapeHtml(shortRepo(item.repo))}</td>
+          <td class="num">${fmt(item.additions)}</td>
+        </tr>`,
+        )
+        .join("")
+    : `<tr><td colspan="3">No recent additions</td></tr>`;
+
+  return `
+    <div class="recent-card">
+      <h3><i class="swatch ${cls}"></i>${escapeHtml(title)}</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Day</th>
+              <th>Repo</th>
+              <th>Lines</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function recentDayRepoItems(data, bucketId, limit) {
+  const items = [];
+  for (const day of data.daily || []) {
+    for (const [repo, byCommitter] of Object.entries(day.byRepo || {})) {
+      const additions = byCommitter?.[bucketId]?.additions || 0;
+      if (additions > 0) {
+        items.push({ date: day.date, repo, additions });
+      }
+    }
+  }
+  items.sort(
+    (a, b) =>
+      b.date.localeCompare(a.date) ||
+      b.additions - a.additions ||
+      a.repo.localeCompare(b.repo),
+  );
+  return items.slice(0, limit);
 }
 
 function renderContributorTable(data) {
@@ -233,11 +336,14 @@ function renderRepoTable(data) {
     .map(
       (r) => `
       <tr>
-        <td>${escapeHtml(r.repo)}</td>
+        <td>
+          <div class="repo-name">${escapeHtml(r.repo)}</div>
+          <div class="repo-total">Total ${fmt(r.total)} lines</div>
+        </td>
         <td class="num">${fmt(r.human)}</td>
         <td class="num">${fmt(r.agent)}</td>
         <td class="num">${fmt(r.other)}</td>
-        <td class="num">${fmt(r.total)}</td>
+        <td class="num total-cell">${fmt(r.total)}</td>
       </tr>`,
     )
     .join("");
@@ -251,33 +357,6 @@ function seriesIds(data) {
   const preferred = ["human", "agent", "unknown"];
   const rest = [...ids].filter((id) => !preferred.includes(id)).sort();
   return [...preferred.filter((id) => ids.has(id)), ...rest];
-}
-
-function chartOptions(title) {
-  return {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: { mode: "index", intersect: false },
-    plugins: {
-      legend: { display: false },
-      title: { display: false, text: title },
-      tooltip: {
-        callbacks: {
-          label: (ctx) => `${ctx.dataset.label}: ${fmt(ctx.parsed.y)}`,
-        },
-      },
-    },
-    scales: {
-      x: {
-        ticks: { color: "#93a0b0", maxTicksLimit: 10 },
-        grid: { color: "rgba(42,52,65,0.5)" },
-      },
-      y: {
-        ticks: { color: "#93a0b0" },
-        grid: { color: "rgba(42,52,65,0.5)" },
-      },
-    },
-  };
 }
 
 function colorFor(id) {
@@ -297,6 +376,17 @@ function hexAlpha(hex, alpha) {
 
 function fmt(n) {
   return Number(n || 0).toLocaleString("en-GB");
+}
+
+function formatDate(value) {
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  return d.toISOString().slice(0, 10);
+}
+
+function shortRepo(fullName) {
+  const parts = String(fullName).split("/");
+  return parts.length > 1 ? parts.slice(1).join("/") : fullName;
 }
 
 function escapeHtml(value) {

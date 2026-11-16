@@ -12,6 +12,7 @@
     />
     <link rel="stylesheet" href="./styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js" defer></script>
     <script src="./app.js" defer></script>
   </head>
   <body>
@@ -46,6 +47,16 @@
         <div class="chart-wrap" style="height: min(280px, 40vh)">
           <canvas id="dailyChart" aria-label="Daily lines of code chart"></canvas>
         </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Recent daily additions</h2>
+        </div>
+        <p class="note" style="margin: 0 0.35rem 0.75rem">
+          Latest 10 day×repo bursts for each author (most recent first).
+        </p>
+        <div class="split-lists" id="recentLists"></div>
       </section>
 
       <section class="panel">
@@ -97,7 +108,7 @@
       <p class="note">
         Counts exclude merge commits, paths in <code>ignore-patterns.txt</code>,
         and single-file additions over the configured size cap. Data refreshes
-        daily via GitHub Actions.
+        daily via GitHub Actions. Chart time axes are linear calendar time.
       </p>
       <div id="error" hidden class="error"></div>
     </div>
