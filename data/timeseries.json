@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-17T15:17:18.005Z",
+  "generatedAt": "2026-11-18T14:54:09.116Z",
   "metric": "additions",
   "metricNote": "Cumulative chart sums filtered additions on the default branch (trunk). Merge commits skipped. Ignored paths, blocklisted repos/authors, and oversized single-file adds excluded.",
   "committers": {
@@ -9,10 +9,10 @@
   },
   "summary": {
     "reposScanned": 51,
-    "commitsSeen": 410,
+    "commitsSeen": 411,
     "commitsCounted": 363,
     "commitsAuthorBlocked": 0,
-    "filesIgnored": 1598,
+    "filesIgnored": 1600,
     "filesOversized": 5,
     "totalAdditions": 38727,
     "byCommitter": {
